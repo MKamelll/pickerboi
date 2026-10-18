@@ -1,8 +1,9 @@
-import emoji
+import emojis
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QClipboard, QCursor, QGuiApplication, QKeyEvent, QFont
+from PySide6.QtGui import QClipboard, QCursor, QFont, QGuiApplication, QKeyEvent
 from PySide6.QtWidgets import (
     QApplication,
+    QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
@@ -18,7 +19,25 @@ class EmojiPickerWidget(QWidget):
         super().__init__(*args, **kwargs)
         self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         self.resize(300, 300)
-        all_emojis = list(emoji.EMOJI_DATA.keys())
+        all_emojis = {}
+        print(emojis.db.get_categories())
+        categories_prec = {
+            "Smileys & Emotion": 1,
+            "People & Body": 2,
+            "Animals & Nature": 3,
+            "Food & Drink": 4,
+            "Objects": 5,
+            "Symbols": 6,
+            "Activities": 7,
+            "Travel & Places": 8,
+            "Flags": 9,
+        }
+        for c in emojis.db.get_categories():
+            if categories_prec[c] not in all_emojis:
+                all_emojis[categories_prec[c]] = []
+            for e in emojis.db.get_emojis_by_category(c):
+                all_emojis[categories_prec[c]].append(e)
+
         layout = QVBoxLayout(self)
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Search..")
@@ -33,14 +52,17 @@ class EmojiPickerWidget(QWidget):
         self.list_widget.setSpacing(5)
         self.list_widget.itemClicked.connect(self.copy_emoji_to_clipboard)
 
-        for i, e in enumerate(all_emojis):
-            item = QListWidgetItem(e)
-            item.setFont(QFont("Noto Color Emoji", 20))
-            item.setSizeHint(QSize(50, 50))
-            item.setToolTip(emoji.demojize(e))
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            item.setData(Qt.ItemDataRole.UserRole, e)
-            self.list_widget.addItem(item)
+        sorted_emojis = dict(sorted(all_emojis.items()))
+        for es in sorted_emojis.values():
+            for e in es:
+                item = QListWidgetItem(e.emoji)
+                item.setFont(QFont("Noto Color Emoji", 20))
+                item.setSizeHint(QSize(50, 50))
+                if len(e.aliases) > 0:
+                    item.setToolTip(e.aliases[0])
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                item.setData(Qt.ItemDataRole.UserRole, " ".join(e.tags + e.aliases))
+                self.list_widget.addItem(item)
 
         layout.addWidget(self.search_bar)
         layout.addWidget(self.list_widget)
@@ -57,18 +79,14 @@ class EmojiPickerWidget(QWidget):
         e = item.text()
         clipboard = QGuiApplication.clipboard()
         clipboard.setText(e, QClipboard.Mode.Clipboard)
-        self.hide()
         QApplication.processEvents()
-        self.close()
 
     def filter_emojis(self, text: str):
         search_term = text.strip().lower()
         for i in range(self.list_widget.count()):
             item = self.list_widget.item(i)
-            emoji_name = (
-                emoji.demojize(item.data(Qt.ItemDataRole.UserRole)).strip().lower()
-            )
-            if not search_term or search_term in emoji_name:
+            emoji_tags = item.data(Qt.ItemDataRole.UserRole) or ""
+            if not search_term or search_term in emoji_tags:
                 item.setHidden(False)
             else:
                 item.setHidden(True)

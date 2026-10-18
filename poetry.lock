@@ -203,19 +203,16 @@ importlib-metadata = ">=3.6"
 typing_extensions = ">=4.6"
 
 [[package]]
-name = "emoji"
-version = "2.16.0"
-description = "Emoji for Python"
+name = "emojis"
+version = "0.7.0"
+description = "Emojis for Python"
 optional = false
-python-versions = ">=3.8"
+python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "emoji-2.16.0-py3-none-any.whl", hash = "sha256:c4230d80640def9071599ff56b1b5950fe13a2a94c0da98c5deab12431b24330"},
-    {file = "emoji-2.16.0.tar.gz", hash = "sha256:ff9e9b1c48389ef78ed1787e7693c555e84e6bb9bac16be1fd65e1616dbf80c8"},
+    {file = "emojis-0.7.0-py3-none-any.whl", hash = "sha256:a777926d8ab0bfdd51250e899a3b3524a1e969275ac8e747b4a05578fa597367"},
+    {file = "emojis-0.7.0.tar.gz", hash = "sha256:5f437674da878170239af9a8196e50240b5922d6797124928574008442196b52"},
 ]
-
-[package.extras]
-dev = ["coverage", "pytest (>=7.4.4)"]
 
 [[package]]
 name = "flake8"
@@ -1240,4 +1237,4 @@ type = ["pytest-mypy (>=1.0.1) ; platform_python_implementation != \"PyPy\""]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.16"
-content-hash = "793596b33490097aa5b41eed8d9dd3a8d53e032891193ed09d0e48cac47f3bdc"
+content-hash = "9f9d3aab6b7a4b58969ea32749a45271e2c93e090f2c9b05d04992a96ced3e2b"
