@@ -7,8 +7,10 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListWidget,
     QListWidgetItem,
+    QMainWindow,
     QPushButton,
     QScrollArea,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -17,10 +19,7 @@ from PySide6.QtWidgets import (
 class EmojiPickerWidget(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
-        self.resize(300, 300)
         all_emojis = {}
-        print(emojis.db.get_categories())
         categories_prec = {
             "Smileys & Emotion": 1,
             "People & Body": 2,
@@ -67,14 +66,6 @@ class EmojiPickerWidget(QWidget):
         layout.addWidget(self.search_bar)
         layout.addWidget(self.list_widget)
 
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key.Key_Escape:
-            event.accept()
-            self.close()
-            return
-
-        super().keyPressEvent(event)
-
     def copy_emoji_to_clipboard(self, item: QListWidgetItem):
         e = item.text()
         clipboard = QGuiApplication.clipboard()
@@ -94,13 +85,33 @@ class EmojiPickerWidget(QWidget):
                 item.setHidden(True)
 
 
+class MainWindow(QMainWindow):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.resize(300, 300)
+
+        tabs_widget = QTabWidget()
+        self.setCentralWidget(tabs_widget)
+        emojis_widget = EmojiPickerWidget()
+        tabs_widget.addTab(emojis_widget, "Emojis")
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key.Key_Escape:
+            event.accept()
+            self.close()
+            return
+
+        super().keyPressEvent(event)
+
+
 if __name__ == "__main__":
     import sys
 
     app = QApplication()
     with open("style.css", "r") as f:
         app.setStyleSheet(f.read())
-    w = EmojiPickerWidget()
+    w = MainWindow()
     cursor_pos = QCursor.pos()
     w.move(cursor_pos)
     w.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
