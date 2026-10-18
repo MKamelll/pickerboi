@@ -79,7 +79,9 @@ class EmojiPickerWidget(QWidget):
         e = item.text()
         clipboard = QGuiApplication.clipboard()
         clipboard.setText(e, QClipboard.Mode.Clipboard)
+        self.hide()
         QApplication.processEvents()
+        self.close()
 
     def filter_emojis(self, text: str):
         search_term = text.strip().lower()
