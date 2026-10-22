@@ -2,6 +2,7 @@ from EmojiPickerWidget import EmojiPickerWidget
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCursor, QKeyEvent
 from PySide6.QtWidgets import QApplication, QMainWindow, QTabWidget
+from GIFwidget import GIFWidget
 
 
 class MainWindow(QMainWindow):
@@ -13,7 +14,9 @@ class MainWindow(QMainWindow):
         tabs_widget = QTabWidget()
         self.setCentralWidget(tabs_widget)
         emojis_widget = EmojiPickerWidget()
+        gif_widget = GIFWidget()
         tabs_widget.addTab(emojis_widget, "Emojis")
+        tabs_widget.addTab(gif_widget, "GIFs")
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Escape:
