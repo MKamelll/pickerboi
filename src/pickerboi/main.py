@@ -1,8 +1,8 @@
 from EmojiPickerWidget import EmojiPickerWidget
+from GIFwidget import GIFWidget
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QCursor, QKeyEvent
 from PySide6.QtWidgets import QApplication, QMainWindow, QTabWidget
-from GIFwidget import GIFWidget
 
 
 class MainWindow(QMainWindow):
@@ -11,12 +11,13 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
         self.resize(300, 300)
 
-        tabs_widget = QTabWidget()
-        self.setCentralWidget(tabs_widget)
+        self.tabs_widget = QTabWidget()
+        self.setCentralWidget(self.tabs_widget)
         emojis_widget = EmojiPickerWidget()
         gif_widget = GIFWidget()
-        tabs_widget.addTab(emojis_widget, "Emojis")
-        tabs_widget.addTab(gif_widget, "GIFs")
+        self.tabs_widget.addTab(emojis_widget, "Emojis")
+        self.tabs_widget.addTab(gif_widget, "GIFs")
+        self.tabs_widget.currentChanged.connect(self.on_tab_changed)
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Escape:
@@ -25,6 +26,13 @@ class MainWindow(QMainWindow):
             return
 
         super().keyPressEvent(event)
+
+    def on_tab_changed(self, index: int):
+        if index != 1:
+            return
+
+        gifs_widget: GIFWidget = self.tabs_widget.widget(index)
+        gifs_widget.load_trending()
 
 
 if __name__ == "__main__":
