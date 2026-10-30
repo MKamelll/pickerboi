@@ -14,9 +14,10 @@ class GIF:
         self.slug = kwargs.get("slug")
         self.url = kwargs.get("url")
         self.title = kwargs.get("title")
+        self.media_url = kwargs.get("images", {}).get("fixed_height", {}).get("url")
 
     def __repr__(self) -> str:
-        return f"GIF(title: {self.title}, type: {self.type}, id: {self.id}, slug: {self.slug}, url: {self.url})"
+        return f"GIF(title: {self.title}, type: {self.type}, id: {self.id}, slug: {self.slug}, url: {self.url}, media_url: {self.media_url})"
 
 
 class GiphyApi:

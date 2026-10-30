@@ -1,7 +1,27 @@
-from GiphyApi import giphy_api_instance
+from GiphyApi import GIF, giphy_api_instance
 from PySide6.QtConcurrent import QtConcurrent
-from PySide6.QtCore import QObject, QRunnable, Qt, QThreadPool, Signal, Slot
-from PySide6.QtWidgets import QLineEdit, QListWidget, QProgressBar, QVBoxLayout, QWidget
+from PySide6.QtCore import (
+    QBuffer,
+    QByteArray,
+    QObject,
+    QRunnable,
+    Qt,
+    QThreadPool,
+    QUrl,
+    Signal,
+    Slot,
+)
+from PySide6.QtGui import QMovie
+from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
+from PySide6.QtWidgets import (
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QListWidgetItem,
+    QProgressBar,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class WorkerSignals(QObject):
@@ -43,6 +63,8 @@ class GIFWidget(QWidget):
         self.progress_bar.setRange(0, 0)
         self.progress_bar.hide()
         self.threadpool = QThreadPool.globalInstance()
+        self.manager = QNetworkAccessManager(self)
+        self.manager.finished.connect(self.download_finished)
 
         layout.addWidget(self.search_bar)
         layout.addWidget(self.list_widget)
@@ -55,8 +77,33 @@ class GIFWidget(QWidget):
         worker = Worker(giphy_api_instance.get_trending, limit=limit)
         worker.signals.started.connect(self.progress_bar.show)
         worker.signals.finished.connect(self.progress_bar.hide)
-        worker.signals.finished.connect(self.handle_result)
+        worker.signals.finished.connect(self.details_result)
         self.threadpool.start(worker)
 
-    def handle_result(self, result):
-        print(result)
+    def download_finished(self, reply: QNetworkReply):
+        label = QLabel(self.list_widget)
+        if reply.error() != reply.NetworkError.NoError:
+            label.setText(f"Error loading the gif: {reply.errorString()}")
+            reply.deleteLater()
+            return
+
+        raw_data = reply.readAll()
+        reply.deleteLater()
+        buffer = QBuffer(self.list_widget)
+        buffer.setData(raw_data)
+        buffer.open(QBuffer.OpenModeFlag.ReadOnly)
+        gif = QMovie(buffer, QByteArray(b"GIF"))
+
+        if gif.isValid():
+            label.setMovie(gif)
+            gif.start()
+        else:
+            label.setText("Downloaded data is not valid GIF format")
+
+        item = QListWidgetItem(self.list_widget)
+        item.setSizeHint(label.sizeHint())
+        self.list_widget.setItemWidget(item, label)
+
+    def details_result(self, result: list[GIF]):
+        for i in result:
+            self.manager.get(QNetworkRequest(QUrl(i.media_url)))
