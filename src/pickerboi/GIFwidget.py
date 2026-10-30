@@ -10,6 +10,7 @@ from PySide6.QtCore import (
     QUrl,
     Signal,
     Slot,
+    QSize,
 )
 from PySide6.QtGui import QMovie
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkReply, QNetworkRequest
@@ -21,6 +22,7 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QVBoxLayout,
     QWidget,
+    QListView,
 )
 
 
@@ -48,6 +50,8 @@ class GIFWidget(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         layout = QVBoxLayout(self)
+        self.gif_grid_size = kwargs.get("gif_grid_size", (100, 100))
+
         self.search_bar = QLineEdit()
         self.search_bar.setPlaceholderText("Search..")
         self.list_widget = QListWidget()
@@ -55,6 +59,10 @@ class GIFWidget(QWidget):
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
+        self.list_widget.setFlow(QListView.Flow.LeftToRight)
+        self.list_widget.setGridSize(
+            QSize(self.gif_grid_size[0], self.gif_grid_size[1])
+        )
         self.list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
         self.list_widget.setMovement(QListWidget.Movement.Static)
         self.list_widget.setSpacing(5)
@@ -82,6 +90,8 @@ class GIFWidget(QWidget):
 
     def download_finished(self, reply: QNetworkReply):
         label = QLabel(self.list_widget)
+        label.setWordWrap(True)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         if reply.error() != reply.NetworkError.NoError:
             label.setText(f"Error loading the gif: {reply.errorString()}")
             reply.deleteLater()
@@ -93,6 +103,7 @@ class GIFWidget(QWidget):
         buffer.setData(raw_data)
         buffer.open(QBuffer.OpenModeFlag.ReadOnly)
         gif = QMovie(buffer, QByteArray(b"GIF"))
+        gif.setScaledSize(QSize(self.gif_grid_size[0] - 10, self.gif_grid_size[1] - 10))
 
         if gif.isValid():
             label.setMovie(gif)
